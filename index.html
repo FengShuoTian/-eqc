@@ -1,0 +1,659 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta charset="UTF-8" name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+    <script src="http://g.tbcdn.cn/mtb/lib-flexible/0.3.4/??flexible_css.js,flexible.js"></script>
+    <script type="text/javascript" src="js/lufylegend-1.10.1.min.js"></script>
+    <script type="text/javascript" src="js/lufylegend.LoadingSample4-0.1.0.min.js"></script>
+    <script type="text/javascript" src="js/jquery-1.8.3.min.js"></script>
+    <script type="text/javascript" src="js/share.js?src=1.12"></script>
+    <title>奔驰吧，EQC！</title>
+</head>
+<body style="margin: 0;">
+<!--<div id="one_page" style="position: absolute;z-index: 50;height: 100%;background-color: #000000;display: none;-->
+<!--background: url('images/one.jpg') no-repeat;width: 100%;background-size: 100%;background-color: black;">-->
+    <div id="one_page" style="position: absolute;z-index: 50;width: 100%;background-color: #000000;display: none;height: 100%;
+    background-size: 100%;background-color: black;">
+    <img style="width: 100%;" src="images/one.jpg">
+    <div id="one_page_btn" style="position: absolute;width: 100%;top: 0;left: 0;height: 100%">
+        <div id="rule_btn" style="position: absolute;left: 75%;top: 3%;z-index: 50;display: block">
+            <img src="images/rule_btn.png" style="width: 90%;">
+        </div>
+        <div id="start_btn" style="position: absolute;top: 72%;;z-index: 50;display: block;transform: translate(-45%,0);left: 50%;">
+            <img src="images/start_game.png" style="width: 90%;">.
+        </div>
+    </div>
+    <div id="rule_page" style="position: absolute; display: none;width: 100%;top: 0">
+        <img class="rule_page_close_btn" style="position: absolute;top: 21%;left: 79%;width: 7%;" src="images/close.png">
+        <img class="rule_page_close_btn" style="position: absolute;top: 65%;left: 50%;width:35%;transform: translate(-50%,0);" src="images/close1.png">
+        <img style="width: 100%;" src="images/rule.png">
+    </div>
+</div>
+<div id="share_page" style="position: absolute;z-index: 101;width: 100%;display: none;background-color: #000321;height: 100%;">
+    <img style="width: 100%;" src="images/share_bg.png">
+    <div id="share" style="position: absolute;top: 0%;right:0;z-index: 51;width: 100%;padding: 4%;">
+        <img src="images/share.png" style="float: right;width: 30%;right: 17%;">
+    </div>
+</div>
+<div id="end_page" style="position: absolute;z-index: 100;width: 100%;display: none;background-color: #000321;height: 100%;">
+    <img style="width: 100%;" src="images/share_bg.png">
+    <div id="suc" style="position: absolute;transform: translate(-33%,0);left: 50%;top: 20%;z-index: 50;display: none">
+        <img src="images/suc.png" style="width: 70%">
+    </div>
+    <div id="def" style="position: absolute;transform: translate(-33%,0);left: 50%;top: 20%;z-index: 50;display: none">
+        <img src="images/def.png" style="width: 70%">
+    </div>
+    <div id="end_btn" style="position: absolute;top: 60%;z-index: 50;display: block;left: 50%;
+    transform: translate(-50%,0);width: 70%;">
+        <div id="restart_btn" style="float: left;width: 47%;display: none;">
+            <img src="images/restart.png" style="width: 100%">
+        </div>
+        <div id="index_btn"  style="float: left;width: 47%;display: none">
+            <img src="images/index_btn.png" style="width: 100%">
+        </div>
+        <div id="share_btn" style="float: right;width: 47%;">
+            <img src="images/share_btn.png" style="width: 100%">
+        </div>
+    </div>
+</div>
+<!--<div id="tips" style="position: absolute;z-index: 49;height: 100%;display: none;background: url('images/tips.png') round; width: 100%;">-->
+<!--</div>-->
+<div id="legend" style="width:100%;height:100%;position: absolute;top: 0;"></div>
+</body>
+<script type="text/javascript">
+    var handle = function(event){
+        event.preventDefault(); //阻止元素发生默认的行为
+    }
+    document.body.addEventListener('touchmove',handle,{ passive: false }); //添加监听事件--页面不可滚动
+    // window.addEventListener(‘touchmove’, func, { passive: false })
+
+    var imglist, backLayer, mountain1Layer, mountain2Layer, jumpLayer, itemLayer, carLayer,sandstormLayer,dianliangLayer,socLayer,readyFile,tipsLayer,
+        mile = 0,width = 750,height,speed=1000/30,
+        bg_w=12955;// 背景的宽
+
+    var status=0 , //游戏状态
+        car_x=50,  //小车初始x位置
+        car_y=435, //小车初始y位置
+        jumpbtn_x=100,
+        jumpbtn_y=580,
+        by_y=car_y-200,
+        cdz_show=0,
+        is_ready=0;
+        v = 20;     // 速度
+    var hj_status = false; // 火箭状态
+
+
+    function restart(){
+    //重新开始
+        carLayer.soc = 100;
+        carLayer.mile = 0;
+        carLayer.y = car_y+30;
+        carLayer.rotate =0;
+        carLayer.jumpstatus = false;
+
+        carLayer.hj_init_s = 0;
+        hj_status = false;
+
+        v =  carLayer.initv;
+
+        /* 显示油量 公里数 */
+        socLayer.x = 109;
+        mileField.text = carLayer.mile+ "米";
+        socField.x = 78;
+        socField.text = carLayer.soc + "%" ;
+
+        /* 清除所有的动画 */
+        LTweenLite.removeAll ();
+        /* 清除所有的道具 */
+        itemLayer.removeAllChild();
+        readyFile.childList[2].visible = true;
+        /* 隐藏所有的提示 */
+        sandstormLayer.visible = false; //沙尘暴
+        cdzLayer.visible= false;
+        lzLayer.visible= false;
+        dcLayer.visible= false;
+        hjLayer.visible= false;
+        itemLayer.x = 0;
+        mountain1Layer.x = 0;
+        mountain2Layer.x = bg_w;
+        status = 0;
+        tipsLayer.visible = false;
+        battery_count = 8;
+        up_porp_x = 0;
+        down_porp_x = 0;
+        suc_show = 0;
+        def_show = 0;
+
+        $("#end_page").hide();
+        $("#def").hide();
+        $("#suc").hide();
+        $('#restart_btn').hide();
+        /* 初始化 html */
+        readyf();
+    }
+    $("#rule_btn").on("touchend",function () {
+        $("#rule_page").show();
+        $("#one_page_btn").hide();
+    });
+    $(".rule_page_close_btn").on("touchend",function () {
+        $("#rule_page").hide();
+        $("#one_page_btn").show();
+    });
+    $("#start_btn").on("touchend",function () {
+        $("#one_page").css("display","none");
+        $("#legend").show();
+        if(is_ready==1&&status==0){
+            readyf();
+        }
+    });
+    $('#restart_btn').on("touchend",function () {
+        restart();
+    })
+    $("#share_page").on("touchend",function () {
+        $("#share_page").hide();
+    });
+    function tips() {
+        tipsLayer.visible = false;
+        if(ready_end==1){ //
+            status =1;
+            LTweenLite.resumeAll();
+        }else if(ready_start==1){  // 已经
+            LTweenLite.resumeAll();
+        }else{
+            readyf();
+        }
+    };
+
+
+    $("#index_btn").on("touchend",function () {
+        window.location.href='https://zw.benz.wx.fractalist.com.cn/zw2019/Index';
+    });
+
+    $("#share_btn").on("touchend",function () {
+        $("#share_page").show();
+    });
+    /*产生随机数*/
+    function randomNum(m, n) {
+        var num = Math.floor(Math.random() * (m - n) + n);
+        return num;
+    }
+
+
+    // 图片资源
+    var imgData = [
+        {name: "bg", path: "./images/bg.jpg"},
+        {name: "jumpbtn", path: "./images/jumpbtn.png"},
+        {name: "metre10", path: "./images/metre10.png"},
+        {name: "metre50", path: "./images/metre50.png"},
+        {name: "rail", path: "./images/rail.png"},
+        {name: "bomb", path: "./images/bomb.png"},
+        {name: "battery", path: "./images/battery.png"},
+        {name: "rocket", path: "./images/rocket.png"},
+        {name: "sandstorm", path: "./images/sandstorm.png"},
+        {name: "tornado", path: "./images/tornado.png"},
+        {name: "dianliang", path: "./images/dianliang.png"},
+        {name: "lun1", path: "./images/lun1.png"},
+        {name: "lun2", path: "./images/lun2.png"},
+        {name: "soc", path: "./images/soc.png"},
+        {name: "cdz_b", path: "./images/cdz.png"},
+        {name: "hj_b", path: "./images/hj.png"},
+        {name: "dc_b", path: "./images/dc.png"},
+        {name: "lz_b", path: "./images/lz.png"},
+        {name: "1", path: "./images/1.png"},
+        {name: "2", path: "./images/2.png"},
+        {name: "3", path: "./images/3.png"},
+        {name: "tips", path: "./images/tips.png"},
+        {name: "car", path: "./images/car.png"}
+    ];
+    //页面加载后，框架自动调用,
+    //参数：帧数，1s刷新多少帧
+    init(speed, "legend", width, height, main);
+
+    function refresh(){
+
+        if(window.innerWidth < window.innerHeight){
+            /* 竖屏 */
+            height = width*window.innerHeight/window.innerWidth;
+            LGlobal.width = width;
+            LGlobal.height = width*window.innerHeight/window.innerWidth;
+            tipsLayer.graphics.clear();
+            tipsLayer.graphics.drawRect(1,'#000000',[0,0,height,width],true,'#000000');
+            readyFile.x = height/2-100;
+            readyFile.y = width/2-200;
+            tipsLB.x = height/2-100;
+            tipsLB.y = width/2-200;
+            backLayer.rotate = 90;
+            backLayer.x = width;
+        }else{
+            /* 横屏 */
+            tipsLayer.visible = true;
+            status=2;
+            LTweenLite.pauseAll();
+            height = width*window.innerWidth/window.innerHeight;
+            tipsLayer.graphics.clear();
+            tipsLayer.graphics.drawRect(1,'#000000',[0,0,height,width],true,'#000000');
+            readyFile.x = height/2-100;
+            readyFile.y = width/2-200;
+            tipsLB.x = height/2-100;
+            tipsLB.y = width/2-200;
+            LGlobal.height = width;
+            LGlobal.width = width*window.innerWidth/window.innerHeight;
+            backLayer.rotate = 0;
+            backLayer.x = 0;
+        }
+        LGlobal.canvasObj.width  = LGlobal.width;
+        LGlobal.canvasObj.height  = LGlobal.height;
+        LSystem.screen(LStage.FULL_SCREEN);
+    }
+    var myTimer;
+    function orientationIsChange(e){
+        myTimer.reset();
+        myTimer.start();
+    }
+    //加载游戏
+    var loadingLayer;
+    function main() {
+        LGlobal.stageScale = LStageScaleMode.SHOW_ALL;
+        LSystem.screen(LStage.FULL_SCREEN); //全屏
+        loadingLayer = new LoadingSample4(LGlobal.height * 0.5, "#fff", "#000");
+        addChild(loadingLayer);
+        LLoadManage.load(imgData,function (progress) {
+            loadingLayer.setProgress(progress);
+            }, gameInit);
+    }
+
+    var ready_start=0,ready_end=0;
+    function readyf() {
+        ready_start = 1;
+        LTweenLite.to(readyFile.childList[2],1,{onComplete:function (data) {
+                    readyFile.childList[2].visible=false;
+                    readyFile.childList[1].visible=true;
+                }})
+            .to(readyFile.childList[1],1,{onComplete:function (data) {
+                    readyFile.childList[1].visible=false;
+                    readyFile.childList[0].visible=true;
+                }})
+            .to(readyFile.childList[0],1,{onComplete:function (data) {
+                    status=1;
+                    ready_end = 1;
+                    readyFile.childList[0].visible=false;
+                }});
+    }
+
+    // 初始化游戏
+    function gameInit(result) {
+        loadingLayer.remove();
+        $("#one_page").show();
+        is_ready = 1;
+        imglist = result;
+        if(status==1){
+            status=0;
+            readyf();
+        }
+
+        backLayer = new LSprite(); //整个大容器
+
+        // 转屏 提示
+        tipsLayer = new LSprite()
+
+        tipsLayer.visible= false;
+        backLayer.addChild(tipsLayer);
+        tipsLB= new LBitmap(new LBitmapData(imglist["tips"]));
+        tipsLayer.addChild(tipsLB);
+
+
+        readyFile = new LSprite();
+        readyFile.addChild(new LBitmap(new LBitmapData(imglist["1"])));
+        readyFile.childList[0].visible = false;
+        readyFile.addChild(new LBitmap(new LBitmapData(imglist["2"])));
+        readyFile.childList[1].visible = false;
+        readyFile.addChild(new LBitmap(new LBitmapData(imglist["3"])));
+        // readyFile.childList[2].visible = false;
+        readyFile.x = height/2-100;
+        readyFile.y = width/2-200;
+        backLayer.addChild(readyFile);
+
+
+        // 转屏
+        myTimer = new LTimer(200, 1);
+        myTimer.addEventListener(LTimerEvent.TIMER, refresh);
+
+
+        if(LGlobal.mobile){
+            refresh();
+            LGlobal.stage.addEventListener(LEvent.WINDOW_ORIENTATIONCHANGE,orientationIsChange);
+        }
+
+
+        // 添加到舞台，框架方法，addChid()后，元素即可以显示在页面上
+        addChild(backLayer);
+
+        mountain1Layer = new LSprite();
+
+        mountain1Layer.x = 0;
+        mountain1Layer.addChild(new LBitmap(new LBitmapData(imglist["bg"])));
+        backLayer.addChild(mountain1Layer);
+
+        mountain2Layer = new LSprite();
+        mountain2Layer.x = bg_w;
+        mountain2Layer.addChild(new LBitmap(new LBitmapData(imglist["bg"])));
+        backLayer.addChild(mountain2Layer);
+
+        jumpLayer = new LSprite();
+        jumpLayer.inputEnabled = trace();
+        jumpLayer.x = jumpbtn_x;
+        jumpLayer.y = jumpbtn_y;
+        jumpLayer.addChild(new LBitmap(new LBitmapData(imglist["jumpbtn"])));
+        backLayer.addChild(jumpLayer);
+
+        //道具容器
+        itemLayer = new LSprite();
+        backLayer.addChild(itemLayer);
+
+        carLayer = new Car(); //汽车
+        backLayer.addChild(carLayer);
+
+        sandstormLayer = new LSprite(); //遮挡层
+        sandstormLayer.x = height / 5;
+        sandstormLayer.addChild(new LBitmap(new LBitmapData(imglist["sandstorm"])));
+        sandstormLayer.visible = false;
+        sandstormLayer.alpha=1;
+        backLayer.addChild(sandstormLayer);
+
+
+        mile0Field = new LTextField();
+        mile0Field.x = 500;
+        mile0Field.y = 60;
+        mile0Field.size = 25;
+        mile0Field.color = "#16c6ff";
+        mile0Field.text = "距离：";
+        backLayer.addChild(mile0Field);
+
+        mileField = new LTextField();
+        mileField.x = 570;
+        mileField.y = 52;
+        mileField.size = 35;
+        mileField.color = "#16c6ff";
+        mileField.text = carLayer.mile+ "米";
+        backLayer.addChild(mileField);
+
+        socField = new LTextField();
+        socField.x = 78;
+        socField.y = 53;
+        socField.size = 19;
+        socField.color = "#000000";
+        socField.text = carLayer.soc + "%" ;
+        backLayer.addChild(socField);
+
+
+
+        socmaskSprite = new LSprite();
+        socmaskSprite.x = 135;
+        socmaskSprite.y = 61;
+        socmaskSprite.graphics.drawVertices(0,"#ff0000", [[0, 0], [180, 0], [169, 28], [0 ,28]], false,"#fff8f8");
+        backLayer.addChild(socmaskSprite);
+
+        socLayer=new LSprite();
+        socLayer.addChild(new LBitmap(new LBitmapData(imglist["soc"])));
+        socLayer.x = 109;
+        // socLayer.x = -65;
+        socLayer.y = 64.5;
+        socLayer.scaleX=1.5;
+        socLayer.scaleY=1.5;
+        socLayer.mask = socmaskSprite;
+        backLayer.addChild(socLayer);
+
+        dianliangLayer=new LBitmap(new LBitmapData(imglist["dianliang"]));
+        dianliangLayer.x =55 ;
+        dianliangLayer.y =27 ;
+        dianliangLayer.scaleX=1.5;
+        dianliangLayer.scaleY=1.5;
+        backLayer.addChild(dianliangLayer);
+
+
+
+
+        // cdzLayer = new LSprite();
+        cdzLayer=new LBitmap(new LBitmapData(imglist["cdz_b"]));
+        cdzLayer.x = car_x;
+        cdzLayer.visible= false;
+        backLayer.addChild(cdzLayer);
+
+        lzLayer=new LBitmap(new LBitmapData(imglist["lz_b"]));
+        lzLayer.x = car_x;
+        lzLayer.visible= false;
+        backLayer.addChild(lzLayer);
+
+        dcLayer=new LBitmap(new LBitmapData(imglist["dc_b"]));
+        dcLayer.x = car_x;
+        dcLayer.visible= false;
+        backLayer.addChild(dcLayer);
+
+        hjLayer=new LBitmap(new LBitmapData(imglist["hj_b"]));
+        hjLayer.x = car_x;
+        hjLayer.visible= false;
+        backLayer.addChild(hjLayer);
+
+
+
+        backLayer.setChildIndex(readyFile, backLayer.numChildren-1);
+        backLayer.setChildIndex(tipsLayer, backLayer.numChildren-1);
+
+        tipsLayer.alpha=0.8;
+        AddAnimation();
+        // backLayer.addChild(new FPS());
+    }
+
+    //添加动画
+    function AddAnimation() {
+
+        //添加事件监听
+        //ENTER_FRAME 帧事件，即 每一帧都会执行 onframe 方法
+        backLayer.addEventListener(LEvent.ENTER_FRAME, onframe);
+        jumpLayer.addEventListener(LMouseEvent.MOUSE_DOWN, jump);
+        tipsLayer.addEventListener(LMouseEvent.MOUSE_DOWN, tips);
+        return true;
+    }
+    function jump() {
+        carLayer.jump();
+    }
+
+
+    function onframe() {
+        if(status==1){ // 游戏运行中
+            carLayer.checkAndDriver();
+            //背景移动
+            montainMove();
+            carLayer.speedUp();
+            //添加障碍物
+            CheckProp();
+            CreateProp();
+
+            if (cdzLayer&&cdzLayer.visible == true) {
+                cdzLayer.y = carLayer.y - 200;
+            }
+            if (dcLayer.visible == true) {
+                dcLayer.y = carLayer.y - 200;
+            }
+            if (hjLayer.visible == true) {
+                hjLayer.y = carLayer.y - 200;
+            }
+            if(carLayer.mile>90&&cdz_show==0){
+                dcLayer.visible=false;
+                hjLayer.visible=false;
+                cdz_show=1;
+                cdzLayer.y = carLayer.y - 200;
+                cdzLayer.visible= true;
+                setTimeout(function () {
+                    cdzLayer.visible= false;
+                },1000*5);
+            }
+        }else if(status==0){ // 游戏未开始
+
+        }else if(status==2){ // 游戏暂停
+
+        }else if(status==3){ // 游戏成功
+            if(suc_show == 0){
+                success();
+                suc_show = 1;
+                $("#end_page").show();
+                $('#index_btn').show();
+                $("#suc").show();
+            }
+        }else if(status==4){ // 游戏失败
+            LTweenLite.pauseAll();
+            if(def_show==0){
+                def_show = setTimeout(function () {
+                    $("#end_page").show();
+                    $('#restart_btn').show();
+                    $("#def").show();
+                },1000)
+            }
+        }else{  // 游戏成功
+
+        }
+    }
+
+    var suc_show=0,def_show=0;
+    //背景
+    function montainMove() {
+        mountain1Layer.x -= v;
+        itemLayer.x -= v;
+        if (mountain1Layer.x <= -bg_w) {
+            mountain1Layer.x = mountain2Layer.x + bg_w - v;
+        }
+        mountain2Layer.x -= v;
+        if (mountain2Layer.x <= -bg_w) {
+            mountain2Layer.x = mountain1Layer.x + bg_w - v;
+        }
+    }
+
+
+
+    function CheckProp() {
+        //遍历舞台中所有的对象（图层）
+        for (var key in itemLayer.childList) {
+            //对每个对象
+            itemLayer.childList[key].check();
+            if (itemLayer.childList[key].mode == "die") {
+                // itemLayer.childList[key].remove();
+                itemLayer.removeChild(itemLayer.childList[key]);
+            }
+        }
+    }
+
+
+
+    //障碍物
+    var down_step = 0;//障碍物出现的相对位置
+    var down_porp_x = down_step;
+    var up_step = 80;//障碍物出现的相对位置
+    var up_porp_x = up_step;
+    var up_y = car_y-100; //上层跑道y 坐标
+    var down_y = car_y+45; //上层跑道y 坐标
+    var battery_count = 8; //电池数量
+
+    function CreateProp() {
+        var random_prop;
+        up_porp_x += carLayer.kv*v;
+        if (up_porp_x > up_step) {
+            up_porp_x=0;
+            up_step = randomNum(30,60);
+            if((8-battery_count)*260+600 < carLayer.mile){
+                // console.log("电池",(8-battery_count)*300+700);
+                battery_count --;
+                CreateBattery();
+            }else{
+                random_prop=randomNum(1,10);
+                // console.log("随机",random_prop);
+                if(random_prop < 7){
+                    CreateMetre();
+                }else if(random_prop == 8&&battery_count>0){
+                    battery_count --;
+                    CreateBattery();
+                }else{
+                    CreateRocket();
+                }
+            }
+        }
+        down_porp_x++;
+        if (down_porp_x > down_step) {
+            down_porp_x = 0;
+            down_step =randomNum(2000,8000)/v;
+            random_prop=randomNum(1,5);
+            if(random_prop==1){
+                CreateRail();
+            }else if(random_prop==2){
+                CreateBomb();
+            }else{
+                CreateTornado();
+            }
+        }
+    }
+
+
+    function CreateMetre() {
+        //产生随机个米道具
+        var random_num=randomNum(2,8);
+        if(random_num<4){
+            for(var i=0; i<random_num ;i++){
+                if(i==0){
+                    var item = new Metre();
+                    var x1=item.x;
+                    itemLayer.addChild(item);
+                }else if(random_num<4){
+                    var item = new Metre(x1+70*i);
+                    itemLayer.addChild(item);
+                }
+            }
+        }else{
+            var item = new Metre();
+            itemLayer.addChild(item);
+        }
+    }
+
+
+    function CreateRail() {
+        var item = new Rail();
+        itemLayer.addChild(item);
+    }
+
+    function CreateBomb() {
+        var item = new Bomb();
+        itemLayer.addChild(item);
+    }
+    function CreateBattery() {
+        var item = new Battery();
+        itemLayer.addChild(item);
+    }
+    function CreateRocket() {
+        var item = new Rocket();
+        itemLayer.addChild(item);
+    }
+    function CreateTornado() {
+        var item = new Tornado();
+        itemLayer.addChild(item);
+    }
+
+
+
+    function success() {
+        $.post("https://zw.benz.wx.fractalist.com.cn/Api/Game/Success",{'game':'bpeqc'},function (data) {
+            console.log(data);
+            // data = JSON.parse(data);
+            if(data.errcode!=1){
+                alert(data.errmsg);
+            }
+        })
+    }
+</script>
+<script type="text/javascript" src="js/Prop.js"></script>
+<script type="text/javascript" src="js/Car.js"></script>
+<script type="text/javascript" src="js/Metre.js"></script>
+<script type="text/javascript" src="js/Rail.js"></script>
+<script type="text/javascript" src="js/Bomb.js"></script>
+<script type="text/javascript" src="js/Battery.js"></script>
+<script type="text/javascript" src="js/Rocket.js"></script>
+<script type="text/javascript" src="js/Tornado.js"></script>
+</html>
